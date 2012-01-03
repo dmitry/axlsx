@@ -70,7 +70,7 @@ module Axlsx
     def serialize(output, confirm_valid=false)
       return false unless !confirm_valid || self.validate.empty?
       p = parts
-      Zip::ZipOutputStream.open(output) do |zip|
+      zip = Proc.new do |zip|
         p.each do |part| 
           unless part[:doc].nil?
             zip.put_next_entry(part[:entry]);
@@ -83,6 +83,11 @@ module Axlsx
             zip.write IO.respond_to?(:binread) ? IO.binread(part[:path]) : IO.read(part[:path])
           end          
         end
+      end
+      if output.is_a?(String)
+        Zip::ZipOutputStream.open(output)
+      else
+        Zip::ZipOutputStream.open(output) # TODO replace with a correct method
       end
       true
     end
